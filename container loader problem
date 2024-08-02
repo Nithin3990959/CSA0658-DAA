@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include <stdlib.h>
+int maxLoad(int weights[], int n, int capacity, int currentWeight, int index) {
+    
+    if (index == n || currentWeight == capacity)
+        return currentWeight;
+
+    
+    if (currentWeight + weights[index] > capacity)
+        return maxLoad(weights, n, capacity, currentWeight, index + 1);
+
+    
+    int includeItem = maxLoad(weights, n, capacity, currentWeight + weights[index], index + 1);
+
+
+    int excludeItem = maxLoad(weights, n, capacity, currentWeight, index + 1);
+
+
+    return (includeItem > excludeItem) ? includeItem : excludeItem;
+}
+
+int main() {
+    int weights[] = {2, 3, 4, 5};
+    int n = sizeof(weights) / sizeof(weights[0]);
+    int capacity = 5;
+
+    int maxWeight = maxLoad(weights, n, capacity, 0, 0);
+
+    printf("The maximum weight that can be loaded into the container is %d\n", maxWeight);
+    return 0;
+}

@@ -1,0 +1,97 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define N 4
+
+
+struct Node {
+    int path[N];
+    int cost;
+    int level;
+};
+
+
+struct Node* newNode(int path[], int level, int cost) {
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+    for (int i = 0; i < N; i++)
+        node->path[i] = path[i];
+    node->level = level;
+    node->cost = cost;
+    return node;
+}
+
+
+int calculateCost(int costMatrix[N][N], int path[], int level) {
+    int cost = 0;
+    for (int i = 0; i < level; i++)
+        cost += costMatrix[i][path[i]];
+    return cost;
+}
+
+int branchAndBound(int costMatrix[N][N]) {
+    
+    struct Node* pq[N*N];
+    int pqSize = 0;
+
+    
+    int rootPath[N];
+    for (int i = 0; i < N; i++)
+        rootPath[i] = -1;
+    struct Node* root = newNode(rootPath, 0, 0);
+
+    pq[pqSize++] = root;
+
+    int minCost = INT_MAX;
+
+    while (pqSize > 0) {
+        struct Node* min = pq[0];
+        pq[0] = pq[--pqSize];
+
+        if (min->cost >= minCost) {
+            free(min);
+            continue;
+        }
+
+        int level = min->level;
+        if (level == N) {
+            minCost = min->cost;
+            free(min);
+            continue;
+        }
+
+        for (int i = 0; i < N; i++) {
+            int assigned = 0;
+            for (int j = 0; j < level; j++)
+                if (min->path[j] == i) {
+                    assigned = 1;
+                    break;
+                }
+            if (!assigned) {
+                struct Node* child = newNode(min->path, level + 1, min->cost);
+                child->path[level] = i;
+                child->cost += costMatrix[level][i];
+
+                if (child->cost < minCost)
+                    pq[pqSize++] = child;
+                else
+                    free(child);
+            }
+        }
+        free(min);
+    }
+    return minCost;
+}
+
+int main() {
+    int costMatrix[N][N] = {
+        {9, 2, 7, 8},
+        {6, 4, 3, 7},
+        {5, 8, 1, 8},
+        {7, 6, 9, 4}
+    };
+
+    printf("The minimum cost is %d\n", branchAndBound(costMatrix));
+    return 0;
+}
+
